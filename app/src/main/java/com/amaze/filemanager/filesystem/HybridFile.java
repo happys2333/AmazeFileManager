@@ -1205,15 +1205,19 @@ public class HybridFile {
       }
     } else if (isDropBoxFile()) {
       CloudStorage cloudStorageDropbox = dataUtils.getAccount(OpenMode.DROPBOX);
+      if (cloudStorageDropbox == null) return false;
       exists = cloudStorageDropbox.exists(CloudUtil.stripPath(OpenMode.DROPBOX, path));
     } else if (isBoxFile()) {
       CloudStorage cloudStorageBox = dataUtils.getAccount(OpenMode.BOX);
+      if (cloudStorageBox == null) return false;
       exists = cloudStorageBox.exists(CloudUtil.stripPath(OpenMode.BOX, path));
     } else if (isGoogleDriveFile()) {
       CloudStorage cloudStorageGoogleDrive = dataUtils.getAccount(OpenMode.GDRIVE);
+      if (cloudStorageGoogleDrive == null) return false;
       exists = cloudStorageGoogleDrive.exists(CloudUtil.stripPath(OpenMode.GDRIVE, path));
     } else if (isOneDriveFile()) {
       CloudStorage cloudStorageOneDrive = dataUtils.getAccount(OpenMode.ONEDRIVE);
+      if (cloudStorageOneDrive == null) return false;
       exists = cloudStorageOneDrive.exists(CloudUtil.stripPath(OpenMode.ONEDRIVE, path));
     } else if (isLocal()) {
       exists = getFile().exists();

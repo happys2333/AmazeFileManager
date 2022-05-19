@@ -29,6 +29,7 @@ import com.amaze.filemanager.filesystem.files.FileUtils
 import com.amaze.filemanager.ui.activities.MainActivity
 import com.amaze.filemanager.ui.fragments.MainFragment
 import com.amaze.filemanager.utils.DataUtils
+import kotlin.concurrent.thread
 
 object HiddenFilesDialog {
     /**
@@ -36,32 +37,44 @@ object HiddenFilesDialog {
      */
     @JvmStatic
     fun showHiddenDialog(mainActivity: MainActivity, mainFragment: MainFragment) {
-        val sharedPrefs = mainActivity.prefs
-        val appTheme = mainActivity.appTheme
+        thread {
+            val hiddenListFiles = FileUtils.toHybridFileConcurrentRadixTree(DataUtils.getInstance().hiddenFiles)
+            for (hiddenListFile in hiddenListFiles) {
+                if (hiddenListFile.isLocal()){
+                    continue
+                }
+                if (!hiddenListFile.exists()){
+                    hiddenListFiles.remove(hiddenListFile)
+                }
+            }
+            mainActivity.runOnUiThread {
+                val sharedPrefs = mainActivity.prefs
+                val appTheme = mainActivity.appTheme
+                val adapter = HiddenAdapter(
+                    mainActivity,
+                    mainFragment,
+                    sharedPrefs,
+                    hiddenListFiles,
+                    null,
+                    false
+                )
+                val materialDialog = MaterialDialog.Builder(mainActivity).also { builder ->
+                    builder.positiveText(R.string.close)
+                    builder.positiveColor(mainActivity.accent)
+                    builder.title(R.string.hiddenfiles)
+                    builder.theme(appTheme.getMaterialDialogTheme(mainFragment.requireContext()))
+                    builder.autoDismiss(true)
+                    builder.adapter(adapter, null)
+                    builder.dividerColor(Color.GRAY)
+                }.build()
 
-        val adapter = HiddenAdapter(
-            mainActivity,
-            mainFragment,
-            sharedPrefs,
-            FileUtils.toHybridFileConcurrentRadixTree(DataUtils.getInstance().hiddenFiles),
-            null,
-            false
-        )
-
-        val materialDialog = MaterialDialog.Builder(mainActivity).also { builder ->
-            builder.positiveText(R.string.close)
-            builder.positiveColor(mainActivity.accent)
-            builder.title(R.string.hiddenfiles)
-            builder.theme(appTheme.getMaterialDialogTheme(mainFragment.requireContext()))
-            builder.autoDismiss(true)
-            builder.adapter(adapter, null)
-            builder.dividerColor(Color.GRAY)
-        }.build()
-
-        adapter.materialDialog = materialDialog
-        materialDialog.setOnDismissListener {
-            mainFragment.loadlist(mainFragment.currentPath, false, OpenMode.UNKNOWN)
+                adapter.materialDialog = materialDialog
+                materialDialog.setOnDismissListener {
+                    mainFragment.loadlist(mainFragment.currentPath, false, OpenMode.UNKNOWN)
+                }
+                materialDialog.show()
+            }
         }
-        materialDialog.show()
+
     }
 }
