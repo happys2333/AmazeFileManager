@@ -216,7 +216,7 @@ class MainActivityActionMode(private val mainActivityReference: WeakReference<Ma
             if (mainFragmentViewModel.openMode != OpenMode.FILE) {
                 hideOption(R.id.openwith, menu)
                 hideOption(R.id.compress, menu)
-                hideOption(R.id.hide, menu)
+
                 hideOption(R.id.addshortcut, menu)
             }
         }

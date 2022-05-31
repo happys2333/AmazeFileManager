@@ -25,6 +25,7 @@ import com.afollestad.materialdialogs.MaterialDialog
 import com.amaze.filemanager.R
 import com.amaze.filemanager.adapters.HiddenAdapter
 import com.amaze.filemanager.fileoperations.filesystem.OpenMode
+import com.amaze.filemanager.filesystem.HybridFile
 import com.amaze.filemanager.filesystem.files.FileUtils
 import com.amaze.filemanager.ui.activities.MainActivity
 import com.amaze.filemanager.ui.fragments.MainFragment
@@ -39,14 +40,19 @@ object HiddenFilesDialog {
     fun showHiddenDialog(mainActivity: MainActivity, mainFragment: MainFragment) {
         thread {
             val hiddenListFiles = FileUtils.toHybridFileConcurrentRadixTree(DataUtils.getInstance().hiddenFiles)
+            val needRemoveFiles = mutableListOf<HybridFile>()
             for (hiddenListFile in hiddenListFiles) {
                 if (hiddenListFile.isLocal()){
                     continue
                 }
                 if (!hiddenListFile.exists()){
-                    hiddenListFiles.remove(hiddenListFile)
+                    needRemoveFiles.add(hiddenListFile)
                 }
             }
+            for (needRemoveFile in needRemoveFiles){
+                hiddenListFiles.remove(needRemoveFile)
+            }
+
             mainActivity.runOnUiThread {
                 val sharedPrefs = mainActivity.prefs
                 val appTheme = mainActivity.appTheme
